@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="bot-grid">
+    <aside class="panel rail">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">通道</p>
+          <h3>列表</h3>
+        </div>
+        <button id="newIntegrationBtn" class="ghost-btn" type="button">新增</button>
+      </div>
+      <div id="integrationList" class="integration-list"></div>
+    </aside>
+
+    <section class="panel workspace">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">调试</p>
+          <h3>通道配置</h3>
+        </div>
+        <button id="testIntegrationBtn" class="ghost-btn" type="button">测试</button>
+      </div>
+
+      <form id="integrationForm" class="editor-form compact-form">
+        <input id="integrationId" type="hidden" />
+        <div class="form-grid">
+          <label>
+            <span>名称</span>
+            <input id="integrationName" type="text" placeholder="企业微信群机器人" required />
+          </label>
+          <label>
+            <span>类型</span>
+            <select id="integrationType">
+              <option value="wecom_group_bot">企业微信群机器人</option>
+              <option value="generic_webhook">通用 Webhook</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span>Webhook URL</span>
+          <input id="integrationWebhook" type="url" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." />
+        </label>
+
+        <label>
+          <span>请求头 JSON</span>
+          <textarea id="integrationHeaders" rows="2" placeholder='{"X-Token":"demo"}'></textarea>
+        </label>
+
+        <label>
+          <span>Body 模板</span>
+          <textarea id="integrationBodyTemplate" rows="3" placeholder="{{ integration_body_template_placeholder }}"></textarea>
+        </label>
+
+        <div class="form-grid">
+          <label class="toggle-line toggle-card">
+            <input id="integrationEnabled" type="checkbox" checked />
+            <span>启用</span>
+          </label>
+          <label class="toggle-line toggle-card">
+            <input id="integrationDefault" type="checkbox" />
+            <span>默认通道</span>
+          </label>
+        </div>
+
+        <div class="compact-block">
+          <div class="binding-head">
+            <p class="section-kicker">回复改时间</p>
+            <span>桥接器转发后才能生效</span>
+          </div>
+          <div class="form-grid">
+            <label class="toggle-line toggle-card">
+              <input id="integrationCommandEnabled" type="checkbox" />
+              <span>启用命令回调</span>
+            </label>
+            <label>
+              <span>前缀</span>
+              <input id="integrationCommandPrefix" type="text" placeholder="boss" />
+            </label>
+          </div>
+          <div class="token-row">
+            <label>
+              <span>Token</span>
+              <input id="integrationCommandToken" type="text" placeholder="bridge-token-123" />
+            </label>
+            <button id="generateTokenBtn" class="mini-btn" type="button">生成</button>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="primary-btn" type="submit">保存</button>
+          <button id="deleteIntegrationBtn" class="danger-btn" type="button">删除</button>
+        </div>
+      </form>
+    </section>
+
+    <aside class="panel rail">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">接口</p>
+          <h3>命令</h3>
+        </div>
+      </div>
+
+      <code id="commandEndpoint" class="endpoint-code">POST /api/commands</code>
+      <pre id="commandHelp" class="command-help">{{ command_help }}</pre>
+
+      <div class="section-head secondary-head">
+        <div>
+          <p class="section-kicker">日志</p>
+          <h3>最近事件</h3>
+        </div>
+      </div>
+
+      <div id="eventList" class="event-list"></div>
+    </aside>
+  </section>
+{% endblock %}

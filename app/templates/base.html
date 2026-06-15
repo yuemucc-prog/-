@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ settings.get("site_title", "Boss 循环计时器") }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body data-page="{% if request.url.path == '/bot' %}bot{% else %}dashboard{% endif %}">
+    <div class="backdrop backdrop-a"></div>
+    <div class="backdrop backdrop-b"></div>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-name" id="siteTitle">{{ settings.get("site_title", "Boss 循环计时器") }}</div>
+        </div>
+
+        <nav class="nav-tabs" aria-label="页面导航">
+          <a class="nav-tab{% if request.url.path != '/bot' %} active{% endif %}" href="/">总览</a>
+          <a class="nav-tab{% if request.url.path == '/bot' %} active{% endif %}" href="/bot">机器人调试</a>
+        </nav>
+
+        <div class="topbar-tools">
+          <span class="status-chip" id="serverTime">--</span>
+          <span class="status-chip" id="liveState">连接中</span>
+          <button id="exportSnapshotBtn" class="ghost-btn" type="button">导出</button>
+        </div>
+      </header>
+
+      <main class="screen">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

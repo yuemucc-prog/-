@@ -196,6 +196,11 @@ async def snapshot() -> Dict[str, Any]:
     return store.snapshot()
 
 
+@app.get("/api/health")
+async def health() -> Dict[str, str]:
+    return {"ok": "true"}
+
+
 @app.get("/api/stream")
 async def stream() -> StreamingResponse:
     queue = bus.subscribe()

@@ -1,0 +1,2 @@
+Trigger Windows release build after disabling uvicorn default log config in windowed exe.
+Timestamp: 2026-06-15 18:25 Asia/Shanghai

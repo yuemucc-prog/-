@@ -5,6 +5,7 @@ import socket
 import threading
 import time
 import tkinter as tk
+import traceback
 import urllib.request
 import webbrowser
 from pathlib import Path
@@ -16,6 +17,14 @@ import uvicorn
 APP_TITLE = "Boss 循环计时器"
 APPDATA_DIR = Path(os.getenv("APPDATA", Path.home() / "AppData" / "Roaming")) / "BossLoopTimer"
 DB_PATH = APPDATA_DIR / "data" / "boss_timer.db"
+LOG_PATH = APPDATA_DIR / "logs" / "desktop.log"
+
+
+def write_log(message: str) -> None:
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    with LOG_PATH.open("a", encoding="utf-8") as handle:
+        handle.write(f"[{timestamp}] {message}\n")
 
 
 def reserve_port() -> int:
@@ -24,11 +33,14 @@ def reserve_port() -> int:
         return int(sock.getsockname()[1])
 
 
-def wait_for_server(url: str, timeout: float = 15.0) -> None:
+def wait_for_server(url: str, timeout: float = 60.0, server_thread: object | None = None) -> None:
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     deadline = time.time() + timeout
     last_error: Exception | None = None
     while time.time() < deadline:
+        startup_error = getattr(server_thread, "startup_error", None)
+        if startup_error is not None:
+            raise RuntimeError(f"后台服务启动失败：{startup_error!r}\n\n日志文件：{LOG_PATH}") from startup_error
         try:
             with opener.open(url, timeout=1.5) as response:
                 if response.status == 200:
@@ -36,7 +48,7 @@ def wait_for_server(url: str, timeout: float = 15.0) -> None:
         except Exception as exc:  # noqa: BLE001
             last_error = exc
             time.sleep(0.25)
-    raise RuntimeError(f"本地服务启动失败：{last_error!r}")
+    raise RuntimeError(f"本地服务启动超时：{last_error!r}\n\n日志文件：{LOG_PATH}")
 
 
 class ServerThread(threading.Thread):
@@ -44,20 +56,26 @@ class ServerThread(threading.Thread):
         super().__init__(daemon=True)
         self.port = port
         self.server: uvicorn.Server | None = None
+        self.startup_error: Exception | None = None
 
     def run(self) -> None:
-        os.environ.setdefault("BOSS_TIMER_DB_PATH", str(DB_PATH))
-        from app.main import app
+        try:
+            os.environ.setdefault("BOSS_TIMER_DB_PATH", str(DB_PATH))
+            write_log(f"Starting local server on 127.0.0.1:{self.port}")
+            from app.main import app
 
-        config = uvicorn.Config(
-            app,
-            host="127.0.0.1",
-            port=self.port,
-            log_level="warning",
-            access_log=False,
-        )
-        self.server = uvicorn.Server(config)
-        self.server.run()
+            config = uvicorn.Config(
+                app,
+                host="127.0.0.1",
+                port=self.port,
+                log_level="warning",
+                access_log=False,
+            )
+            self.server = uvicorn.Server(config)
+            self.server.run()
+        except Exception as exc:  # noqa: BLE001
+            self.startup_error = exc
+            write_log("Server thread crashed:\n" + traceback.format_exc())
 
     def stop(self) -> None:
         if self.server is not None:
@@ -69,6 +87,7 @@ class DesktopApp:
         APPDATA_DIR.mkdir(parents=True, exist_ok=True)
         self.port = reserve_port()
         self.url = f"http://127.0.0.1:{self.port}/"
+        self.health_url = f"http://127.0.0.1:{self.port}/api/health"
         self.server = ServerThread(self.port)
         self.root = tk.Tk()
         self.root.title(APP_TITLE)
@@ -157,13 +176,14 @@ class DesktopApp:
         ).pack(side="right")
 
     def start(self) -> None:
+        write_log("Desktop app starting")
         self.server.start()
         self.root.after(100, self._finish_startup)
         self.root.mainloop()
 
     def _finish_startup(self) -> None:
         try:
-            wait_for_server(self.url)
+            wait_for_server(self.health_url, server_thread=self.server)
         except Exception as exc:  # noqa: BLE001
             self.status_var.set("启动失败，请查看错误提示。")
             messagebox.showerror(APP_TITLE, str(exc))

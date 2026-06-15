@@ -381,7 +381,7 @@ a {
 }
 
 .timer-list,
-integration-list,
+.integration-list,
 .event-list {
   display: grid;
   gap: 8px;
@@ -715,7 +715,7 @@ integration-list,
 }
 
 .dashboard-grid .rail:last-child,
-.bot-grid .rail:last-child {
+bot-grid .rail:last-child {
   animation-delay: 140ms;
 }
 

@@ -1,0 +1,15 @@
+[project]
+name = "boss-loop-timer"
+version = "0.1.0"
+description = "Windows 单机 Boss 循环计时器，支持本机运行与微信机器人提醒。"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "fastapi>=0.115.0",
+  "httpx>=0.28.0",
+  "jinja2>=3.1.0",
+  "uvicorn[standard]>=0.34.0",
+]
+
+[tool.uv]
+package = false

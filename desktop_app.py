@@ -51,6 +51,17 @@ def wait_for_server(url: str, timeout: float = 60.0, server_thread: object | Non
     raise RuntimeError(f"本地服务启动超时：{last_error!r}\n\n日志文件：{LOG_PATH}")
 
 
+def build_server_config(app, port: int) -> uvicorn.Config:
+    return uvicorn.Config(
+        app,
+        host="127.0.0.1",
+        port=port,
+        log_level="warning",
+        access_log=False,
+        log_config=None,
+    )
+
+
 class ServerThread(threading.Thread):
     def __init__(self, port: int) -> None:
         super().__init__(daemon=True)
@@ -64,13 +75,7 @@ class ServerThread(threading.Thread):
             write_log(f"Starting local server on 127.0.0.1:{self.port}")
             from app.main import app
 
-            config = uvicorn.Config(
-                app,
-                host="127.0.0.1",
-                port=self.port,
-                log_level="warning",
-                access_log=False,
-            )
+            config = build_server_config(app, self.port)
             self.server = uvicorn.Server(config)
             self.server.run()
         except Exception as exc:  # noqa: BLE001

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="focus-bar panel">
+    <div class="focus-copy">
+      <p class="section-kicker">当前焦点</p>
+      <h2 id="heroName">默认 Boss</h2>
+      <div class="focus-countdown" id="heroCountdown">00:31:00</div>
+    </div>
+
+    <div class="focus-meta">
+      <div><span>下次</span><strong id="heroNextRun">--</strong></div>
+      <div><span>循环</span><strong id="heroInterval">--</strong></div>
+      <div><span>提醒</span><strong id="heroLeads">--</strong></div>
+    </div>
+
+    <div class="focus-actions">
+      <div class="action-row">
+        <button id="heroResetBtn" class="primary-btn" type="button">重置</button>
+        <button data-shift="-1" class="mini-btn" type="button">-1</button>
+        <button data-shift="1" class="mini-btn" type="button">+1</button>
+        <button data-shift="5" class="mini-btn" type="button">+5</button>
+      </div>
+      <div class="action-row action-inline">
+        <input id="heroNextRunInput" type="datetime-local" />
+        <button id="heroApplyNextRunBtn" class="ghost-btn" type="button">改下次</button>
+      </div>
+      <div class="action-row">
+        <button id="heroToggleBtn" class="ghost-btn" type="button">暂停</button>
+        <button id="newTimerBtn" class="ghost-btn" type="button">新建</button>
+      </div>
+    </div>
+
+    <div class="focus-progress">
+      <span id="heroProgressBar"></span>
+    </div>
+  </section>
+
+  <section class="dashboard-grid">
+    <aside class="panel rail">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">计时器</p>
+          <h3>列表</h3>
+        </div>
+      </div>
+      <div id="timerList" class="timer-list"></div>
+    </aside>
+
+    <section class="panel workspace">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">编辑</p>
+          <h3>计时器</h3>
+        </div>
+        <button id="resetTimerFormBtn" class="ghost-btn" type="button">清空</button>
+      </div>
+
+      <form id="timerForm" class="editor-form compact-form">
+        <input id="timerId" type="hidden" />
+        <div class="form-grid">
+          <label>
+            <span>名称</span>
+            <input id="timerName" name="name" type="text" placeholder="火山 Boss" required />
+          </label>
+          <label>
+            <span>循环</span>
+            <input id="timerInterval" name="interval_minutes" type="number" min="1" max="1440" required />
+          </label>
+          <label>
+            <span>提醒</span>
+            <input id="timerLeads" name="lead_minutes" type="text" placeholder="10,5,1,0" />
+          </label>
+          <label>
+            <span>颜色</span>
+            <input id="timerColor" name="color" type="color" />
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            <span>锚点时间</span>
+            <input id="timerAnchorTime" name="anchor_time" type="datetime-local" />
+          </label>
+          <label class="toggle-line toggle-card">
+            <input id="timerEnabled" name="enabled" type="checkbox" checked />
+            <span>启用</span>
+          </label>
+        </div>
+
+        <label>
+          <span>备注</span>
+          <textarea id="timerNote" name="note" rows="2" placeholder="地图、线路、队伍"></textarea>
+        </label>
+
+        <label>
+          <span>提醒模板</span>
+          <textarea
+            id="timerMessageTemplate"
+            name="message_template"
+            rows="3"
+            placeholder="{{ timer_message_template_placeholder }}"
+          ></textarea>
+        </label>
+
+        <div class="integration-binding compact-block">
+          <div class="binding-head">
+            <p class="section-kicker">绑定机器人</p>
+            <a class="inline-link" href="/bot">去调试</a>
+          </div>
+          <div id="timerIntegrationOptions" class="integration-options"></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="primary-btn" type="submit">保存</button>
+          <button id="deleteTimerBtn" class="danger-btn" type="button">删除</button>
+        </div>
+      </form>
+    </section>
+
+    <aside class="panel rail">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">设置</p>
+          <h3>共享</h3>
+        </div>
+      </div>
+
+      <form id="settingsForm" class="editor-form compact-form">
+        <label>
+          <span>标题</span>
+          <input id="settingsSiteTitle" type="text" value="{{ settings.get('site_title', 'Boss 循环计时器') }}" />
+        </label>
+        <label>
+          <span>同步提示</span>
+          <textarea id="settingsBroadcastHint" rows="2">{{ settings.get("broadcast_hint", "当前数据保存在这台电脑本机。") }}</textarea>
+        </label>
+        <label>
+          <span>容错秒数</span>
+          <input id="settingsGraceSeconds" type="number" min="5" max="600" value="{{ settings.get('scheduler_grace_seconds', '75') }}" />
+        </label>
+        <button class="primary-btn" type="submit">保存设置</button>
+      </form>
+
+      <div class="section-head secondary-head">
+        <div>
+          <p class="section-kicker">日志</p>
+          <h3>最近事件</h3>
+        </div>
+      </div>
+
+      <div id="eventList" class="event-list"></div>
+    </aside>
+  </section>
+{% endblock %}
